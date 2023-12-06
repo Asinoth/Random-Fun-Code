@@ -1,0 +1,75 @@
+# x15 i
+# x16 array[]
+# x18 temp
+# x19 temp2
+		
+	.data           # init. data memory
+	.align 2		# 2^2 = 4
+myarray:	.space 32	# memory allocate for 8 integers (8*4)
+					# string initiation
+str_msg:	.asciz "\nYou will need to type 8 integers.\n"	
+str_msg1:   .asciz "Go: "
+str_msg2:   .asciz "\n~~~~~~The converted array is the following~~~~~~\n\n"
+str_nl: 	.asciz "\n"
+str_sp: 	.asciz "  "
+
+    .text           # program memory:
+    .globl main     # label "main" must be global;
+                    # default trap.handler calls main.
+
+main:
+
+		la		x16, myarray	# starting address of a[]
+		addi	x15, x0, 8      # init i <- 8 counter for input
+		
+		# PRINT A PROMPT:
+        addi    x17, x0, 4       # system call code for print_string
+        la      x10, str_msg		# pseudo-instruction: address of string
+        ecall                 # print the string from str_msg
+		
+RLoop:	
+		# ask for next int:
+        addi    x17, x0, 4       # system call code for print_string
+        la      x10, str_msg1	# pseudo-instruction: address of string
+        ecall                 # print the string from str_msg1
+
+        addi    x17, x0, 5       # system call code for read_int
+        ecall                 # read a line containing an integer
+        add     x18, x10, x0     # read the int to the temp
+		sw x18, (x16)			# store to the array
+		addi x16, x16, 4		# move to next int of the array
+		addi x15, x15, -1		# i <- i + 1
+		
+		bne x15, x0, RLoop		# loop until i equals 0
+
+		# PRINT A PROMPT:
+        addi    x17, x0, 4       # system call code for print_string
+        la      x10, str_msg2	# pseudo-instruction: address of string
+        ecall                 # print the string from str_msg2
+		
+		addi x16, x16, -4		# first let's go a step back because we are +4 
+								# next to the last array index
+		addi x15, x0, 8			# reinitialize the i = 8
+WLoop:
+		
+		lw x18, (x16)			# load the int from the array index(tail point)
+		add x19, x18, x0		# store to temp2 and start creating x6 value
+		add x19, x19, x19		# x = x + x (2x)
+		add x19, x19, x18		# 2x = 2x + x (3x)
+		add x19, x19, x19		# 3x = 3x + 3x (6x)
+		
+		#Print the int x6
+        addi    x17, x0, 1       # system call code for print_int
+        add     x10, x19, x0     # copy argument s to x4
+        ecall                 # print the integer in x4 
+		
+		# print a space:
+        addi    x17, x0, 4       # system call code for print_string
+        la      x10, str_sp		# pseudo-instruction: address of string
+        ecall                 # print the string from str_sp		
+		
+		addi x15, x15, -1		# i <- i - 1
+		addi x16, x16, -4 		# go to the previous int 
+		bne x15, x0, WLoop		# loop until i equals 0
+		
+		j main					# Keep Running
