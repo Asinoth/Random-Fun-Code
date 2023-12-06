@@ -1,0 +1,87 @@
+			       #Linked-lists
+
+.data
+str_nl: .asciiz "\n"
+str_Er: .asciiz "Invalid Input, exiting...\n"
+str_Ex: .asciiz "Thanks for using \n"
+.text
+	.globl main
+	.globl read_int
+	.globl node_alloc
+	.globl search_list
+	.globl Exit_e
+	.globl Exit
+	.globl Exit_F
+	.globl Looponion
+	.globl Check_next
+main:
+		sw $ra,0($sp)
+		jal node_alloc
+		add $s0,$v0,$0
+		add $s1,$v0,$0
+
+Looponion:	jal node_alloc
+		sw $v0,4($s1)
+		add $s1,$v0,$0			#to s0 deixnei sto root tis listas
+
+		jal read_int			#reading int
+		slti $t0,$v0,0
+		bne $t0,$0,Exit
+		beq $v0,$0,Exit
+		sw $v0,0($s1)			#and storing it in 1st location
+		j Looponion
+Exit:	sw $0,4($s1)
+	sw $0,0($s1)
+	jal read_int
+	add $s1,$0,$v0
+	slti $t0,$v0,0
+	bne $t0,$0,Exit_e
+	beq $v0,$0,Exit_e
+	add $s2,$s0,$0
+	lw $t2,4($s2)
+	add $s2,$0,$t2
+Looponion_part2:
+			lw $t0,0($s2)
+			slt $t1,$t0,$s1
+			beq $t1,$0,Check_next
+			add $a0,$t0,$0
+			jal print_node
+	Check_next:	lw $t2,4($s2)
+			add $s2,$0,$t2
+			lw $t1,4($s2)
+			bne $t1,$0,Looponion_part2
+			j Exit_F
+node_alloc:
+		addi $2,$0,9
+		addi $4,$0,8
+		syscall
+		jr $ra
+
+read_int:
+		addi $2,$0,5
+		syscall
+		add $v0,$0,$2
+		jr $ra
+
+Exit_e:
+	addi $2,$0,4
+	la $4,str_Er
+	syscall
+	addi $2,$0,10
+	syscall
+
+print_node:
+		addi $2,$0,1
+		add  $4,$0,$a0
+		syscall
+		la $4,str_nl
+		addi $2,$0,4
+		syscall
+		jr $ra
+
+Exit_F:
+	addi $2,$0,4
+	la $4,str_Ex
+	syscall
+	addi $2,$0,10
+	syscall
